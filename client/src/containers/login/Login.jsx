@@ -78,9 +78,9 @@ const Login = () => {
 			<CtaButton text="Login" type="submit" />
 			<div style={{display:'flex',gap:'10px'}}>
 				
-			<div style={{display:'flex',gap:'10px',alignItems:'center'}}><p>If you dont have account please register</p>
+			<div style={{display:'flex',gap:'10px',alignItems:'center'}}><p>If you dont have account please 			<Link to='/register' style={{color:'blue'}}>Register</Link>
+			</p>
 
-			<Link to='register' className="ctabutton">Register</Link>
 			</div>
 			</div>
 		  </form>
