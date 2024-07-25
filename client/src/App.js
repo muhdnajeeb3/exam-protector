@@ -10,6 +10,7 @@ import {
 } from './containers';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
+import MaliciousScreen from './containers/maliciousdata/MaliciousScreen';
 
 const App = () => {
 	return (
@@ -23,6 +24,7 @@ const App = () => {
 					<Route path="/dashboard" element={<Dashboard />} />
 					<Route path="/status" element={<Status />} />
 					<Route path="/exam" element={<Exam />} />
+					<Route path="/malicious" element={<MaliciousScreen />} />
 				</Routes>
 			</BrowserRouter>
 		</div>

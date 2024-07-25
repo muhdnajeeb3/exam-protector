@@ -47,7 +47,7 @@ function WebLiveCapture({ setPeopledetected }) {
         faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
         faceapi.nets.faceExpressionNet.loadFromUri("/models"),
         faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
-        cocoSsd.load().then(model => setObjectDetector(model)), // Load the object detection model
+        cocoSsd.load().then((model) => setObjectDetector(model)), // Load the object detection model
       ]);
       console.log("Models loaded successfully.");
       await createFaceMatcher();
@@ -79,6 +79,40 @@ function WebLiveCapture({ setPeopledetected }) {
     }
   };
 
+  const captureImage = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const context = canvas.getContext("2d");
+    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/png");
+  };
+
+  const sendScreenshot = async (screenshot) => {
+    if (!screenshot) {
+      console.log('No screenshot captured');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `/api/test/screenshot/${localStorage.getItem('test_code')}/${localStorage.getItem('user_id')}`,
+        { screenshot: screenshot }, // Send only the base64 part
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}` // Ensure to include the token
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        console.log('Screenshot uploaded successfully');
+      }
+    } catch (error) {
+      console.error('Failed to upload screenshot', error);
+    }
+  }; 
   const detectFacesAndObjects = async () => {
     if (!faceMatcher || !objectDetector) {
       console.log("FaceMatcher or object detector not yet initialized.");
@@ -100,7 +134,12 @@ function WebLiveCapture({ setPeopledetected }) {
       context.clearRect(0, 0, canvas.width, canvas.height);
       setPeopledetected(detections?.length);
 
-      if (detections.length > 0) {
+      let maliciousActivityDetected = false;
+
+      if (detections.length !== 1) {
+        console.log("Malicious activity detected: Number of faces is not equal to 1.");
+        maliciousActivityDetected = true;
+      } else {
         console.log(`Detected ${detections.length} faces in the video stream.`);
 
         const resizedDetections = faceapi.resizeResults(detections, {
@@ -115,31 +154,45 @@ function WebLiveCapture({ setPeopledetected }) {
           const drawBox = new faceapi.draw.DrawBox(box, { label });
           drawBox.draw(canvas);
 
+          if (label === "Unknown") {
+            console.log("Malicious activity detected: Face is unknown.");
+            maliciousActivityDetected = true;
+          }
+
           console.log(`Detected matching face with label: ${label}`);
         });
 
         faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
         faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
-      } else {
-        console.log("No faces detected in the video stream.");
       }
 
-      if (objectDetections.length > 0) {
-        console.log(`Detected ${objectDetections.length} objects in the video stream.`);
+      objectDetections.forEach((detection) => {
+        if (detection.class === "person" && detections.length !== 1) {
+          console.log("Malicious activity detected: Multiple persons detected.");
+          maliciousActivityDetected = true;
+        }
+        if (["cell phone", "mobile phone", "tablet"].includes(detection.class)) {
+          console.log("Malicious activity detected: Mobile or tablet detected.");
+          maliciousActivityDetected = true;
+        }
 
-        objectDetections.forEach((detection) => {
-          const [x, y, width, height] = detection.bbox;
-          context.strokeStyle = "#00FF00";
-          context.lineWidth = 2;
-          context.strokeRect(x, y, width, height);
-          context.font = "18px Arial";
-          context.fillStyle = "#00FF00";
-          context.fillText(
-            `${detection.class} (${Math.round(detection.score * 100)}%)`,
-            x,
-            y > 10 ? y - 5 : 10
-          );
-        });
+        const [x, y, width, height] = detection.bbox;
+        context.strokeStyle = "#00FF00";
+        context.lineWidth = 2;
+        context.strokeRect(x, y, width, height);
+        context.font = "18px Arial";
+        context.fillStyle = "#00FF00";
+        context.fillText(
+          `${detection.class} (${Math.round(detection.score * 100)}%)`,
+          x,
+          y > 10 ? y - 5 : 10
+        );
+      });
+
+      if (maliciousActivityDetected) {
+        const screenshot = captureImage();
+        console.log("Malicious activity detected. Screenshot captured:", screenshot);
+        await sendScreenshot(screenshot);
       }
     } catch (error) {
       console.error("Error detecting faces and objects in video stream:", error);

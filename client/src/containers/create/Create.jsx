@@ -52,8 +52,7 @@ const Create = () => {
           start_time: formData.startDateTimeFormat,
           end_time: formData.endDateTimeFormat,
           no_of_candidates_appear: parseInt(formData.totalExpectedCandidates),
-          total_threshold_warnings: 11,
-          // total_threshold_warnings: parseInt(formData.totalThresholdWarnings)
+          duration:formData.duration
         }),
       });
       const result = await response.json();

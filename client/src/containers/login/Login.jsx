@@ -3,6 +3,7 @@ import logo from './../../assets/logofont.svg';
 import {  CtaButton } from '../../components';
 import {Link, useNavigate} from 'react-router-dom'
 import './login.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Login = () => {
 	// State to manage form data
@@ -10,7 +11,7 @@ const Login = () => {
 	const [password, setPassword] = useState('');
 
 	const navigate = useNavigate();
-  
+	const notify = (msg, type = 'info') => toast[type](msg);
 	// Function to handle form submission
 	const handleSubmit = async (e) => {
 	  e.preventDefault();
@@ -36,11 +37,13 @@ const Login = () => {
       		localStorage.setItem('user_email', data.user?.email);
       		localStorage.setItem('user_name', data.user?.fullName);
 			  localStorage.setItem('user_profile_picture', data.user?.profilePicture);
-		  alert('login successful');
+			  notify('Login successful', 'success');
 
-		  navigate('/')
+			  setTimeout(() => {
+				navigate('/');
+			  }, 3000); // Adjust
 		} else {
-		  alert('email or password is incorrect');
+			notify('Email or password is incorrect', 'error');
 		}
 	  } catch (error) {
 		console.error('Error:', error);
@@ -50,6 +53,7 @@ const Login = () => {
   
 	return (
 		<div className="user-login">
+			<ToastContainer />
 		<div className="logo">
 		<img src='https://www.schneideit.com/wp-content/uploads/2020/12/schneide-logo.svg' alt="schneide-logo" />
 
@@ -88,26 +92,5 @@ const Login = () => {
 	  </div>
 	);
   };
-
-// const Login = () => {
-// 	return (
-// 		<div className="user-login">
-// 			<div className="logo">
-// 				<img src={logo} alt="aankh-logo" />
-// 			</div>
-// 			<div className="login-form">
-// 				<h1 className="title-heading">User Login</h1>
-// 				<div className="input-fields">
-// 					{inputField.map((item) => (
-// 						<CommonInput placeholderText={item} />
-// 					))}
-// 				</div>
-// 				<a href="/">
-// 					<CtaButton text="Login" />
-// 				</a>
-// 			</div>
-// 		</div>
-// 	);
-// };
 
 export default Login;

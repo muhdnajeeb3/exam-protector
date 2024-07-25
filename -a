@@ -1,0 +1,264 @@
+[33mcommit e607e32a034d64969a69e318174ce07c193e49e7[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Author: Muhammed Najeeb <muhdnajeeb3@gmail.com>
+Date:   Wed Jul 24 00:02:33 2024 +0530
+
+    new changes
+
+[1mdiff --git a/client/.gitignore b/client/.gitignore[m
+[1mindex 4d29575..4834268 100644[m
+[1m--- a/client/.gitignore[m
+[1m+++ b/client/.gitignore[m
+[36m@@ -5,6 +5,8 @@[m
+ /.pnp[m
+ .pnp.js[m
+ [m
+[32m+[m[32mmodel/assets/shape_predictor_68_face_landmarks.dat[m
+[32m+[m[32mmodel/assets/yolov3.weights[m
+ # testing[m
+ /coverage[m
+ [m
+[1mdiff --git a/client/src/containers/exam/Exam.jsx b/client/src/containers/exam/Exam.jsx[m
+[1mindex 014d3bb..55b679a 100644[m
+[1m--- a/client/src/containers/exam/Exam.jsx[m
+[1m+++ b/client/src/containers/exam/Exam.jsx[m
+[36m@@ -1,6 +1,5 @@[m
+ import React, { useState, useEffect } from "react";[m
+ import { Timer, WebLiveCapture } from "./../../components";[m
+[31m-import devtools from "devtools-detect";[m
+ import "./exam.css";[m
+ import { ToastContainer, toast } from "react-toastify";[m
+ import axios from "axios";[m
+
+[33mcommit ec7db2bd1a393df701a22224222211e95e01ab28[m
+Author: Muhammed Najeeb <muhdnajeeb3@gmail.com>
+Date:   Tue Jul 23 20:04:04 2024 +0530
+
+    model deleting
+
+[1mdiff --git a/model/.dockerignore b/model/.dockerignore[m
+[1mdeleted file mode 100644[m
+[1mindex 47854f1..0000000[m
+[1m--- a/model/.dockerignore[m
+[1m+++ /dev/null[m
+[36m@@ -1,13 +0,0 @@[m
+[31m-__pycache__[m
+[31m-*.pyc[m
+[31m-.git[m
+[31m-.venv[m
+[31m-venv[m
+[31m-.DS_Store[m
+[31m-.pytest_cache[m
+[31m-*.pyo[m
+[31m-*.pyd[m
+[31m-.Python[m
+[31m-*.sqlite3[m
+[31m-*.db[m
+[31m-*.db-journal[m
+[1mdiff --git a/model/.gitignore b/model/.gitignore[m
+[1mdeleted file mode 100644[m
+[1mindex e985853..0000000[m
+[1m--- a/model/.gitignore[m
+[1m+++ /dev/null[m
+[36m@@ -1 +0,0 @@[m
+[31m-.vercel[m
+[1mdiff --git a/model/.render.yaml b/model/.render.yaml[m
+[1mdeleted file mode 100644[m
+[1mindex 85793f5..0000000[m
+[1m--- a/model/.render.yaml[m
+[1m+++ /dev/null[m
+[36m@@ -1,8 +0,0 @@[m
+[31m-services:[m
+[31m-  - type: web[m
+[31m-    name: flask-app[m
+[31m-    env: docker[m
+[31m-    plan: free[m
+[31m-    dockerfilePath: ./Dockerfile[m
+[31m-    buildCommand: ""[m
+[31m-    startCommand: ""[m
+[1mdiff --git a/model/Dockerfile b/model/Dockerfile[m
+[1mdeleted file mode 100644[m
+[1mindex fb702db..0000000[m
+[1m--- a/model/Dockerfile[m
+[1m+++ /dev/null[m
+[36m@@ -1,28 +0,0 @@[m
+[31m-# Use an official Python runtime as a parent image[m
+[31m-FROM python:3.9-slim[m
+[31m-[m
+[31m-# Set the working directory in the container[m
+[31m-WORKDIR /app[m
+[31m-[m
+[31m-# Install system dependencies and distutils[m
+[31m-RUN apt-get update && apt-get install -y python3-distutils[m
+[31m-[m
+[31m-# Copy the requirements file into the container[m
+[31m-COPY requirements.txt .[m
+[31m-[m
+[31m-# Install Python dependencies[m
+[31m-RUN pip install --upgrade pip[m
+[31m-RUN pip install -r requirements.txt[m
+[31m-[m
+[31m-# Copy the rest of the application code into the container[m
+[31m-COPY . .[m
+[31m-[m
+[31m-# Set environment variables for Flask[m
+[31m-ENV FLASK_APP=app.py[m
+[31m-ENV FLASK_RUN_HOST=0.0.0.0[m
+[31m-[m
+[31m-# Expose port 8080 to the outside world[m
+[31m-EXPOSE 8080[m
+[31m-[m
+[31m-# Run the application[m
+[31m-CMD ["flask", "run"][m
+[1mdiff --git a/model/Procfile b/model/Procfile[m
+[1mdeleted file mode 100644[m
+[1mindex 2169897..0000000[m
+[1m--- a/model/Procfile[m
+[1m+++ /dev/null[m
+[36m@@ -1 +0,0 @@[m
+[31m-web: python model/app.py[m
+[1mdiff --git a/model/README.md b/model/README.md[m
+[1mdeleted file mode 100644[m
+[1mindex 8db7625..0000000[m
+[1m--- a/model/README.md[m
+[1m+++ /dev/null[m
+[36m@@ -1,116 +0,0 @@[m
+[31m-## SETUP :[m
+[31m-[m
+[31m-_STEP 1 :_ Create a virtual environment in model folder[m
+[31m-[m
+[31m-- Change working directory to model :[m
+[31m-[m
+[31m-```bash[m
+[31m-cd model[m
+[31m-```[m
+[31m-[m
+[31m-- Install virtualenv package if it is not installed already :[m
+[31m-[m
+[31m-```bash[m
+[31m-pip install virtualenv[m
+[31m-```[m
+[31m-[m
+[31m-- Create virtual environment :[m
+[31m-[m
+[31m-```bash[m
+[31m-virtualenv venv[m
+[31m-```[m
+[31m-[m
+[31m-_STEP 2 :_ Activate virtual environment :[m
+[31m-[m
+[31m-```bash[m
+[31m-venv\Scripts\activate[m
+[31m-```[m
+[31m-[m
+[31m-> This command need administrative permissions.[m
+[31m-> Use command prompt to execute this[m
+[31m-> Will not work in powershell[m
+[31m-[m
+[31m-_STEP 3 :_ Install required libraries[m
+[31m-[m
+[31m-```py[m
+[31m-pip install -r requirements.txt[m
+[31m-```[m
+[31m-[m
+[31m-_STEP 4 :_ Run flask app[m
+[31m-[m
+[31m-```bash[m
+[31m-python app.py[m
+[31m-```[m
+[31m-[m
+[31m----[m
+[31m-[m
+[31m-After this the api will be up and running on : _localhost:8080_[m
+[31m-You can now give api calls from react frontend.[m
+[31m-[m
+[31m-API ROUTES :[m
+[31m-[m
+[31m-1. '/predict_pose' : To predict head pose[m
+[31m-2. '/predict_people' : To predict number of people in input image[m
+[31m-[m
+[31m-NOTE :[m
+[31m-[m
+[31m-- Both of these function takes as input a b64 encoded string which is sent via react webcam.[m
+[31m-- For testing purposes you will find a sample encoded string of foward pose image given below in _sample_input.txt_ file .[m
+[31m-[m
+[31m----[m
+[31m-[m
+[31m-## Results of face pose estimation model :[m
+[31m-[m
+[31m-### LEFT POSE :[m
+[31m-[m
+[31m-![left_pose](images/left.jpeg)[m
+[31m-[m
+[31m-### RIGHT POSE :[m
+[31m-[m
+[31m-![right_pose](images/right_pose.jpeg)[m
+[31m-[m
+[31m-### FORWARD :[m
+[31m-[m
+[31m-![straight_pose](images/forward.jpg)[m
+[31m-[m
+[31m-NOTE :[m
+[31m-[m
+[31m-> - Here we are detecting only 3 directions (forward, left , right) because that is all we need.[m
+[31m-> - The number of detected directions can be increased.[m
+[31m-> - To detect more directions go to draw annotations function in pose_estimator.py file and elif conditions for more angles.[m
+[31m-[m
+[31m-```py[m
+[31m-if angles[1] < -15:[m
+[31m-    GAZE = "Looking: Left"[m
+[31m-elif angles[1] > 15:[m
+[31m-    GAZE = "Looking: Right"[m
+[31m-else:[m
+[31m-    GAZE = "Forward"[m
+[31m-```[m
+[31m-[m
+[31m----[m
+[31m-[m
+[31m-## Results of crowd couting model :[m
+[31m-[m
+[31m-### SAMPLE1 :[m
+[31m-[m
+[31m-![first_image](images/first.jpeg)[m
+[31m-[m
+[31m-### SAMPLE2 :[m
+[31m-[m
+[31m-![seccond_image](images/second.jpeg)[m
+[31m-[m
+[31m-NOTE :[m
+[31m-[m
+[31m-> The number of people detected can be changed via lowering the threshold[m
+[31m-> To do that go to predict funtion in app.py and change the variable threshold[m
+[31m-> Our default value is 0.5[m
+[31m-[m
+[31m-```py[m
+[31m-threshold = 0.5[m
+[31m-```[m
+[31m-[m
+[31m----[m
+[31m-[m
+[31m-- Original repo for pose-estimation-model 👉 [REPO_LINK](https://github.com/yinguobing/head-pose-estimation)[m
+[31m-- Link for object detection model 👉 [MODEL_LINK](https://tfhub.dev/tensorflow/efficientdet/d0/1)[m
+[1mdiff --git a/model/__pycache__/mark_detector.cpython-312.pyc b/model/__pycache__/mark_detector.cpython-312.pyc[m
+[1mdeleted file mode 100644[m
+[1mindex 1fdc80e..0000000[m
+Binary files a/model/__pycache__/mark_detector.cpython-312.pyc and /dev/null differ
+[1mdiff --git a/model/__pycache__/pose_estimator.cpython-312.pyc b/model/__pycache__/pose_estimator.cpython-312.pyc[m
+[1mdeleted file mode 100644[m
+[1mindex ea3703b..0000000[m
+Binary files a/model/__pycache__/pose_estimator.cpython-312.pyc and /dev/null differ
+[1mdiff --git a/model/app.py b/model/app.py[m
+[1mdeleted file mode 100644[m
+[1mindex da75c40..0000000[m
+[1m--- a/model/app.py[m
+[1m+++ /dev/null[m
+[36m@@ -1,130 +0,0 @@[m
+[31m-import base64[m
+[31m-import logging[m
+[31m-import matplotlib.pyplot as plt[m
+[31m-from flask import Flask, request, jsonify[m
+[31m-from flask_cors import CORS[m
+[31m-import os[m
+[31m-import tensorflow as tf[m
+[31m-import tensorflow_hub as hub[m
+[31m-import cv2[m
+[31m-import shuti

@@ -24,7 +24,7 @@ const Landing = () => {
   const handleJoinClick = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get("https://schneide-exam-protector.onrender.com/api/all-created-test", {
+      const response = await axios.get("/api/all-created-test", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -34,8 +34,12 @@ const Landing = () => {
       // Find the test with the matching join code
       const test =await tests.find((test) => test.test_code === joincode);
       const matchedjoincode =await test?.test_link_by_user;
+      const duration =await test?.duration;
+      console.log('dur',test);
       // const duration =await test?.duration;
       localStorage.setItem('examlink',matchedjoincode);
+      localStorage.setItem('duration',duration);
+      localStorage.setItem('test_code',joincode) ;
       // localStorage.setItem('duration',duration);
       navigate('/exam')
       console.log(matchedjoincode);

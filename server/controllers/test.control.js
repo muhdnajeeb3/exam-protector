@@ -1,9 +1,10 @@
 const Test = require("../models/test");
 const User = require("../models/user");
 const shortid = require("shortid");
+const File = require('../models/fileupload');
 
 const createTest = (req, res) => {
-    const { email, test_name, test_link_by_user, start_time, end_time, no_of_candidates_appear, total_threshold_warnings } = req.body;
+    const { email, test_name, test_link_by_user, start_time, end_time, no_of_candidates_appear, duration } = req.body;
 
     // Check if the test_link_by_user already exists
     Test.findOne({ test_link_by_user: test_link_by_user }, (err, existingTest) => {
@@ -27,7 +28,8 @@ const createTest = (req, res) => {
             start_time: start_time,
             end_time: end_time,
             no_of_candidates_appear: no_of_candidates_appear,
-            total_threshold_warnings: total_threshold_warnings
+            // total_threshold_warnings: total_threshold_warnings,
+            duration:duration
         });
 
         test.save((error, data) => {
@@ -249,6 +251,56 @@ const getAllowedUsers = async (req, res) => {
   }
 };
 
+// In test.control.js
+const uploadScreenshot =async (req, res) => {
+  try {
+    console.log('hihi',req.params);
+    const { user_id, test_code } = req.params;
+    const { screenshot } = req.body; // Assuming base64 and optional originalName are sent in the request body
+
+    if (!screenshot) {
+        return res.status(400).json({ message: 'No image data provided' });
+    }
+
+    // Store metadata and base64 data in MongoDB
+    const fileData = {
+      user_id,
+        test_code,
+        screenshot,
+    };
+
+    const newFile = new File(fileData);
+    await newFile.save();
+
+    res.status(200).json({ message: 'File uploaded successfully', fileData });
+} catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ message: 'Server error' });
+}
+};
+
+const getScreenshotsByTestCodeAndUserId = async (req, res) => {
+  const { test_code, user_id } = req.params;
+  console.log(test_code,user_id);
+  
+  try {
+      // Fetch screenshots for a specific test code and user ID
+      const screenshots = await File.find({ test_code: test_code, user_id: user_id });
+      if (!screenshots.length) {
+          return res.status(404).json({ message: 'No screenshots found for this test code and user ID' });
+      }
+
+      const result = { [user_id]: screenshots.map(screenshot => screenshot.screenshot) };
+      
+      res.status(200).json(result);
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
 module.exports = {
   createTest,
   userCreatedTests,
@@ -266,4 +318,6 @@ module.exports = {
   getAllWarnings,
   getTerminatedUsers,
   getAllowedUsers,
+  uploadScreenshot,
+  getScreenshotsByTestCodeAndUserId
 };

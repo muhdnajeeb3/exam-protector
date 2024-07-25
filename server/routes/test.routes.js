@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require('multer');
+
 const {
     createTest,
     userCreatedTests,
@@ -12,10 +14,29 @@ const {
     allowInExam,
     getAllWarnings ,
     getTerminatedUsers,
-    getAllowedUsers
+    getAllowedUsers,
+    uploadScreenshot,
+    getScreenshotsByTestCode,
+    getScreenshotsByTestCodeAndUserId
 } = require("../controllers/test.control");
 const { requireSignIn } = require("../middlewares");
 const router = express.Router();
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = path.join(path.dirname(__dirname), 'uploads');
+        console.log('Saving file to:', uploadPath);
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        const fileName = shortid.generate() + '-' + file.originalname;
+        console.log('Generated file name:', fileName);
+        cb(null, fileName);
+    }
+});
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit for file uploads
+});
 
 // user/admin can create test
 router.post("/create-test", requireSignIn, createTest);
@@ -52,5 +73,10 @@ router.get("/terminated-users", requireSignIn, getTerminatedUsers);
 router.patch("/allow-in-exam/:userId", requireSignIn, allowInExam);
 
 router.get("/allowed-users", requireSignIn, getAllowedUsers);
+
+router.post('/test/screenshot/:test_code/:user_id', requireSignIn, upload.single('screenshot'), uploadScreenshot);
+
+router.get('/screenshots/:test_code/:user_id', getScreenshotsByTestCodeAndUserId);
+
 
 module.exports = router;

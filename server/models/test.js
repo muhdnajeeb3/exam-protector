@@ -43,12 +43,17 @@ const testSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    duration: {
+        type: Number,
+        required: true
+    },
     total_threshold_warnings: {
         type: Number,
         required: true,
         default: 3
     }
 }, { timestamps: true });
+
 
 
 module.exports = mongoose.model('Test', testSchema);
