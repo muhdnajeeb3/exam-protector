@@ -28,7 +28,7 @@ const Dashboard = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await axios.get(
-        "https://schneide-exam-protector.onrender.com/api/all-created-test",
+        "/api/all-created-test",
         {
           headers: {
             Authorization: `Bearer ${token}`,

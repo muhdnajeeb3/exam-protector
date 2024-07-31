@@ -279,9 +279,27 @@ const uploadScreenshot =async (req, res) => {
 }
 };
 
+// const getScreenshotsByTestCodeAndUserId = async (req, res) => {
+//   const { test_code, user_id } = req.params;
+//   console.log(test_code,user_id);
+  
+//   try {
+//       // Fetch screenshots for a specific test code and user ID
+//       const screenshots = await File.find({ test_code: test_code, user_id: user_id });
+//       if (!screenshots.length) {
+//           return res.status(404).json({ message: 'No screenshots found for this test code and user ID' });
+//       }
+
+//       const result = { [user_id]: screenshots.map(screenshot => screenshot.screenshot) };
+      
+//       res.status(200).json(result);
+//   } catch (error) {
+//       res.status(500).json({ message: error.message });
+//   }
+// };
 const getScreenshotsByTestCodeAndUserId = async (req, res) => {
   const { test_code, user_id } = req.params;
-  console.log(test_code,user_id);
+  console.log(test_code, user_id);
   
   try {
       // Fetch screenshots for a specific test code and user ID
@@ -290,13 +308,24 @@ const getScreenshotsByTestCodeAndUserId = async (req, res) => {
           return res.status(404).json({ message: 'No screenshots found for this test code and user ID' });
       }
 
-      const result = { [user_id]: screenshots.map(screenshot => screenshot.screenshot) };
+      // Fetch user details
+      const user = await User.findById(user_id, 'fullName');
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      const result = {
+          user_id: user_id,
+          fullName: user.fullName,
+          screenshots: screenshots.map(screenshot => screenshot.screenshot)
+      };
       
       res.status(200).json(result);
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
 };
+
 
 
 

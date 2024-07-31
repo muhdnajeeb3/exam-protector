@@ -24,7 +24,7 @@ const App = () => {
 					<Route path="/dashboard" element={<Dashboard />} />
 					<Route path="/status" element={<Status />} />
 					<Route path="/exam" element={<Exam />} />
-					<Route path="/malicious" element={<MaliciousScreen />} />
+					<Route path="/suspicious" element={<MaliciousScreen />} />
 				</Routes>
 			</BrowserRouter>
 		</div>
