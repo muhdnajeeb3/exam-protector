@@ -4,13 +4,56 @@ import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import "@tensorflow/tfjs"; // Import TensorFlow.js
 import axios from "axios";
 import "./weblivecapture.css";
+import Loading from "../Loading/Loading";
+import { format } from 'date-fns';
 
-function WebLiveCapture({ setPeopledetected }) {
+
+const resizeAndCompressImage = (base64Str, maxWidth, maxHeight, quality) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const newBase64 = canvas.toDataURL("image/jpeg", quality);
+      resolve(newBase64);
+    };
+  });
+};
+
+const getBase64Size = (base64Str) => {
+  const base64String = base64Str.split(",")[1];
+  const stringLength = base64String.length;
+  return (stringLength * (3 / 4) - 2) / 1000; // Size in KB
+};
+
+
+function WebLiveCapture({ setPeopledetected,warningdetected }) {
   const videoRef = useRef();
   const canvasRef = useRef();
   const [faceMatcher, setFaceMatcher] = useState(null);
   const [username, setUsername] = useState("najeeb"); // Replace with the actual username
   const [objectDetector, setObjectDetector] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     startVideo();
@@ -66,6 +109,7 @@ function WebLiveCapture({ setPeopledetected }) {
 
       if (!results.length) {
         console.log("No faces detected in the reference image.");
+        setLoading(false);
         return;
       }
 
@@ -74,21 +118,29 @@ function WebLiveCapture({ setPeopledetected }) {
       console.log(
         "FaceMatcher created with descriptors from the reference image."
       );
+      setLoading(false);
     } catch (error) {
       console.error("Error creating face matcher:", error);
+      setLoading(false);
     }
   };
 
-  const captureImage = () => {
+  const captureImage = async() => {
     const canvas = document.createElement("canvas");
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     const context = canvas.getContext("2d");
     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/png");
+    const originalImage = canvas.toDataURL("image/png");
+
+    // Resize and compress the image
+    const compressedImage = await resizeAndCompressImage(originalImage, 800, 800, 0.7);
+    console.log(`Original Size: ${getBase64Size(originalImage).toFixed(2)} KB`);
+    console.log(`Compressed Size: ${getBase64Size(compressedImage).toFixed(2)} KB`);
+    return compressedImage;
   };
 
-  const sendScreenshot = async (screenshot) => {
+  const sendScreenshot = async (screenshot, message, timestamp) => {
     if (!screenshot) {
       console.log('No screenshot captured');
       return;
@@ -97,7 +149,11 @@ function WebLiveCapture({ setPeopledetected }) {
     try {
       const response = await axios.post(
         `/api/test/screenshot/${localStorage.getItem('test_code')}/${localStorage.getItem('user_id')}`,
-        { screenshot: screenshot }, // Send only the base64 part
+        { 
+          screenshot: screenshot, 
+          message: message, 
+          timestamp: timestamp 
+        }, 
         {
           headers: {
             'Content-Type': 'application/json',
@@ -113,6 +169,7 @@ function WebLiveCapture({ setPeopledetected }) {
       console.error('Failed to upload screenshot', error);
     }
   }; 
+
   const detectFacesAndObjects = async () => {
     if (!faceMatcher || !objectDetector) {
       console.log("FaceMatcher or object detector not yet initialized.");
@@ -135,10 +192,12 @@ function WebLiveCapture({ setPeopledetected }) {
       setPeopledetected(detections?.length);
 
       let maliciousActivityDetected = false;
+      let message = '';
 
       if (detections.length !== 1) {
         console.log("Malicious activity detected: Number of faces is not equal to 1.");
         maliciousActivityDetected = true;
+        message = 'Number of faces is not equal to 1';
       } else {
         console.log(`Detected ${detections.length} faces in the video stream.`);
 
@@ -157,6 +216,7 @@ function WebLiveCapture({ setPeopledetected }) {
           if (label === "Unknown") {
             console.log("Malicious activity detected: Face is unknown.");
             maliciousActivityDetected = true;
+            message = 'Face is unknown';
           }
 
           console.log(`Detected matching face with label: ${label}`);
@@ -170,10 +230,12 @@ function WebLiveCapture({ setPeopledetected }) {
         if (detection.class === "person" && detections.length !== 1) {
           console.log("Malicious activity detected: Multiple persons detected.");
           maliciousActivityDetected = true;
+          message = 'Multiple persons detected';
         }
         if (["cell phone", "mobile phone", "tablet"].includes(detection.class)) {
           console.log("Malicious activity detected: Mobile or tablet detected.");
           maliciousActivityDetected = true;
+          message = 'Mobile or tablet detected';
         }
 
         const [x, y, width, height] = detection.bbox;
@@ -190,9 +252,10 @@ function WebLiveCapture({ setPeopledetected }) {
       });
 
       if (maliciousActivityDetected) {
-        const screenshot = captureImage();
-        console.log("Malicious activity detected. Screenshot captured:", screenshot);
-        await sendScreenshot(screenshot);
+        const screenshot =await captureImage();
+        const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+        await sendScreenshot(screenshot, message, timestamp);
+        warningdetected();
       }
     } catch (error) {
       console.error("Error detecting faces and objects in video stream:", error);
@@ -206,6 +269,7 @@ function WebLiveCapture({ setPeopledetected }) {
 
   return (
     <>
+      {loading && <Loading message="Knowledge is power, and it's on its way..."/>}
       <div className="appvide">
         <video
           crossOrigin="anonymous"

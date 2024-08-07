@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CopyLink, Terminated, PieChart } from "../../components";
+import { CopyLink, Terminated, PieChart, Navbar } from "../../components";
 import { ToastContainer, toast } from "react-toastify";
 import "./status.css";
 import axios from "axios";
@@ -92,23 +92,18 @@ const Status = ({
   }, []);
 
   return (
+    <>
+    <Navbar />
     <div className="status-dashboard">
-      <div className="logo">
-        <img
-          src="https://www.schneideit.com/wp-content/uploads/2020/12/schneide-logo.svg"
-          alt="schneide-logo"
-        />
-      </div>
-
       <h1 className="title-heading">Test Dashboard</h1>
 
-      <div className="test-details">
+      {/* <div className="test-details">
         <div className="test-item">
           <h4 className="test-time">{time}</h4>
           <h4 className="test-name">{name}</h4>
           <CopyLink link={link} />
         </div>
-      </div>
+      </div> */}
       <div className="charts">
         <PieChart data={pieData} />
       </div>
@@ -122,7 +117,7 @@ const Status = ({
                 studentID={item._id}
                 warningCnt={item.person_detected}
                 studentName={item.fullName}
-                message="Multiple People Detected"
+                // message="Multiple People Detected"
                 notify={notify}
               />
             </div>
@@ -130,6 +125,7 @@ const Status = ({
         </div>
       </div>
     </div>
+    </>
   );
 };
 

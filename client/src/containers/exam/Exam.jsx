@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Timer, WebLiveCapture } from "./../../components";
+import { Navbar, Timer, WebLiveCapture } from "./../../components";
 import "./exam.css";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
@@ -130,7 +130,7 @@ const Exam = ({
 
   useEffect(() => {
     setTimeout(() => {
-      const interval = setInterval(captureCheck, 10000);
+      const interval = setInterval(captureCheck, 15000);
       return () => clearInterval(interval);
     }, [25000]);
   }, []);
@@ -150,7 +150,7 @@ const Exam = ({
       // Set a timeout to handle initial load delay
       initialTimeoutId = setTimeout(() => {
         setInitialLoad(false);
-      }, 15000); // Delay for 5 seconds
+      }, 20000); // Delay for 5 seconds
     } else {
       if (peopledetected !== 1) {
         setWarningCnt((prev) => prev + 1);
@@ -216,51 +216,89 @@ const Exam = ({
   //   }
   // }
 
+  const handleTimeout = () => {
+    // setIsFrozen(true);
+    setShowMessage("Time out");
+    disableForm();
+    let overlay = document.getElementById("overlay");
+      overlay.classList.add("terminate");
+  };
+
+  //   useEffect(() => {
+  //     const handleContextMenu = (event) => {
+  //         event.preventDefault();
+  //         alert('Right-click is disabled on this page.');
+  //     };
+
+  //     const handleKeyDown = (event) => {
+  //         if (event.key === 'F12' ||
+  //             (event.ctrlKey && event.shiftKey && event.key === 'I') ||
+  //             (event.metaKey && event.altKey && event.key === 'I') ||
+  //             (event.ctrlKey && event.shiftKey && event.key === 'J') ||
+  //             (event.ctrlKey && event.shiftKey && event.key === 'C') ||
+  //             (event.ctrlKey && event.key === 'U')) {
+  //             event.preventDefault();
+  //             alert('Developer tools are disabled on this page.');
+  //         }
+  //     };
+
+  //     document.addEventListener('contextmenu', handleContextMenu);
+  //     document.addEventListener('keydown', handleKeyDown);
+
+  //     return () => {
+  //         document.removeEventListener('contextmenu', handleContextMenu);
+  //         document.removeEventListener('keydown', handleKeyDown);
+  //     };
+  // }, []);
+
   return (
-    <div className="exam-container">
-      <div className="left-column">
-        <div className="image-capture">
-          <WebLiveCapture setPeopledetected={setPeopledetected} />
-        </div>
-        <div className="exam-details">
-          <h3 className="title-heading">Student Details</h3>
-          <div className="details">
-            <h4 className="student-id">
-              {" "}
-              <strong>ID:</strong> {studentID}
-            </h4>
-            <h4 className="student-id">
-              {" "}
-              <strong>Name:</strong> {studentName}
-            </h4>
-            <h4 className="student-email">
-              <strong>Email:</strong> {studentEmail}
-            </h4>
+    <>
+      <Navbar />
+      <div className="exam-container">
+        <div className="left-column">
+          <div className="image-capture">
+            <WebLiveCapture setPeopledetected={setPeopledetected} warningdetected={increasePersonDetected}/>
           </div>
-          <ToastContainer />
-        </div>
-      </div>
-      <div className="embedded-form">
-        <div className="hide" id="overlay">
-          <h2>Message: {showMessage}</h2>
-          <h2>Warnings: {warningCnt}</h2>
-          {/* <h1>Exam Terminated</h1>
-          <h3>Please contact your organization/admin.</h3> */}
-        </div>
-        <div className="form" id="form-blur">
-          <h2 className="title-heading">{examName}</h2>
-          <iframe title={examName} className="form-link" src={formLink}>
-            Form
-          </iframe>
-          <div className="responsive-message">
-            <h1>Please join via a Laptop/PC for best performance</h1>
+          <div className="exam-details">
+            <h3 className="title-heading">Student Details</h3>
+            <div className="details">
+              <h4 className="student-id">
+                {" "}
+                <strong>ID:</strong> {studentID}
+              </h4>
+              <h4 className="student-id">
+                {" "}
+                <strong>Name:</strong> {studentName}
+              </h4>
+              <h4 className="student-email">
+                <strong>Email:</strong> {studentEmail}
+              </h4>
+            </div>
+            <ToastContainer />
           </div>
         </div>
+        <div className="embedded-form">
+          <div className="hide" id="overlay">
+            <h2>Message: {showMessage}</h2>
+            <h2>Warnings: {warningCnt}</h2>
+          </div>
+          <div className="form" id="form-blur">
+            <h2 className="title-heading">{examName}</h2>
+            <iframe title={examName} className="form-link" src={formLink}>
+              Form
+            </iframe>
+            <div className="responsive-message">
+              <h1>Please join via a Laptop/PC for best performance</h1>
+            </div>
+          </div>
+        </div>
+        <div className="timer">
+          <Timer initialMinute={1} 
+          onTimeout={handleTimeout}
+          />
+        </div>
       </div>
-      <div className="timer">
-        <Timer initialMinute={duration} />
-      </div>
-    </div>
+    </>
   );
 };
 

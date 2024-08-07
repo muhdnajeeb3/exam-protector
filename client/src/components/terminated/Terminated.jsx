@@ -5,7 +5,7 @@ import axios from "axios";
 const Terminated = ({
   studentID,
   warningCnt,
-  message,
+  // message,
   studentName,
   notify,
 }) => {
@@ -60,7 +60,7 @@ const Terminated = ({
           <h4 className="student-id">ID: {studentID}</h4>
           <h6 className="student-id">Name: {studentName}</h6>
           <h6 className="warning-cnt">Warnings: {warningCnt}</h6>
-          <h6 className="message">Message: {message}</h6>
+          {/* <h6 className="message">Message: {message}</h6> */}
         </div>
         <div className="btns">
           <button className="terminate-btn" onClick={Terminate}>

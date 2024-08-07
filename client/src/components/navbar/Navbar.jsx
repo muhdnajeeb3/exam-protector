@@ -6,19 +6,19 @@ import { Link } from "react-router-dom";
 const NavLinks = ({ username }) => (
   <>
     <p>
-      <a href="/">Blog</a>
+      <Link to='/'>Blog</Link>
     </p>
     <p>
-      <a href="/">Product</a>
+      <Link to='/status'>Status</Link>
     </p>
     <p>
-      <a href="/">Community</a>
+      <Link to='/dashboard'>Dashboard</Link>
     </p>
     <p>
-      <a href="/">Pricing</a>
+      <Link to='/suspicious'>Suspicious</Link>
     </p>
     <p>
-      <a href="/">Contact Us</a>
+      <Link to='/'>Contact Us</Link>
     </p>
     <p>
       {username ? username : (
@@ -47,7 +47,9 @@ const Navbar = () => {
   return (
     <div className="landing-navbar">
       <div className="landing-navbar-logo">
+        <Link to='/'>
         <img src='https://www.schneideit.com/wp-content/uploads/2020/12/schneide-logo.svg' alt="schneide-logo" />
+        </Link>
       </div>
       <div className="landing-navbar-links">
         <NavLinks username={username} />

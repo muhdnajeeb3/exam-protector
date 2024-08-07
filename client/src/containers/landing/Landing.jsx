@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Navbar, CtaButton, CommonInput } from "./../../components";
+import { CtaButton, Navbar } from "./../../components";
 import infinite from "./../../assets/infinite.svg";
 import "./landing.css";
 import { Link, useNavigate } from "react-router-dom";
@@ -29,26 +29,30 @@ const Landing = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      const tests = await response.data._allTests;
+
+      const tests = response.data._allTests;
 
       // Find the test with the matching join code
-      const test =await tests.find((test) => test.test_code === joincode);
-      const matchedjoincode =await test?.test_link_by_user;
-      const duration =await test?.duration;
-      console.log('dur',test);
-      // const duration =await test?.duration;
-      localStorage.setItem('examlink',matchedjoincode);
-      localStorage.setItem('duration',duration);
-      localStorage.setItem('test_code',joincode) ;
-      // localStorage.setItem('duration',duration);
-      navigate('/exam')
-      console.log(matchedjoincode);
+      const test = tests.find((test) => test.test_code === joincode);
+
+      if (test) {
+        const matchedjoincode = test.test_link_by_user;
+        const duration = test.duration;
+
+        localStorage.setItem("examlink", matchedjoincode);
+        localStorage.setItem("duration", duration);
+        localStorage.setItem("test_code", joincode);
+
+        // Navigate to the exam page or perform any other necessary actions
+        navigate('/exam');
+      } else {
+        alert("Invalid join code. Please try again.");
+      }
     } catch (error) {
-      alert("Invalid join code. Please try again.");
-      console.log(error);
+      alert("An error occurred while fetching the test details. Please try again.");
+      console.error(error);
     }
   };
-
   return (
     <>
       <Navbar />

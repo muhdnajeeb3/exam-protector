@@ -10,6 +10,7 @@
     "axios": "^1.7.1",
     "bootstrap": "^5.3.3",
     "chart.js": "^2.9.4",
+    "date-fns": "^3.6.0",
     "devtools-detect": "^4.0.2",
     "face-api.js": "^0.22.2",
     "react": "^17.0.2",

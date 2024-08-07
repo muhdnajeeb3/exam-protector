@@ -1,72 +1,81 @@
 const Test = require("../models/test");
 const User = require("../models/user");
 const shortid = require("shortid");
-const File = require('../models/fileupload');
+const File = require("../models/fileupload");
 
 const createTest = (req, res) => {
-    const { email, test_name, test_link_by_user, start_time, end_time, no_of_candidates_appear, duration } = req.body;
+  const {
+    email,
+    test_name,
+    test_link_by_user,
+    start_time,
+    end_time,
+    no_of_candidates_appear,
+    duration,
+  } = req.body;
 
-    // Check if the test_link_by_user already exists
-    Test.findOne({ test_link_by_user: test_link_by_user }, (err, existingTest) => {
-        if (err) {
-            // Handle any server errors while querying the database
-            return res.status(500).json({ msg: "Server error while checking for existing test link", error: err });
-        }
-        if (existingTest) {
-            // If the test link already exists, send a specific response
-            return res.status(400).json({ msg: "Test link already exists" });
-        }
+  // Check if the test_link_by_user already exists
+  Test.findOne(
+    { test_link_by_user: test_link_by_user },
+    (err, existingTest) => {
+      if (err) {
+        // Handle any server errors while querying the database
+        return res.status(500).json({
+          msg: "Server error while checking for existing test link",
+          error: err,
+        });
+      }
+      if (existingTest) {
+        // If the test link already exists, send a specific response
+        return res.status(400).json({ msg: "Test link already exists" });
+      }
 
-        // If test link does not exist, proceed to create a new test
-        const testCode = shortid.generate() + "-" + shortid.generate();
-        const test = new Test({
-            userId: req.user.id,
-            email: email,
-            test_name: test_name,
-            test_link_by_user: test_link_by_user,
+      // If test link does not exist, proceed to create a new test
+      const testCode = shortid.generate() + "-" + shortid.generate();
+      const test = new Test({
+        userId: req.user.id,
+        email: email,
+        test_name: test_name,
+        test_link_by_user: test_link_by_user,
+        test_code: testCode,
+        start_time: start_time,
+        end_time: end_time,
+        no_of_candidates_appear: no_of_candidates_appear,
+        // total_threshold_warnings: total_threshold_warnings,
+        duration: duration,
+      });
+
+      test.save((error, data) => {
+        if (error) {
+          // Handle any errors while saving the new test
+          return res
+            .status(400)
+            .json({ msg: "Something happened while creating new test", error });
+        }
+        if (data) {
+          // If the test is successfully created, send a success response
+          return res.status(201).json({
+            msg: "Successfully created new Test on platform",
             test_code: testCode,
-            start_time: start_time,
-            end_time: end_time,
-            no_of_candidates_appear: no_of_candidates_appear,
-            // total_threshold_warnings: total_threshold_warnings,
-            duration:duration
-        });
-
-        test.save((error, data) => {
-            if (error) {
-                // Handle any errors while saving the new test
-                return res.status(400).json({ msg: "Something happened while creating new test", error });
-            }
-            if (data) {
-                // If the test is successfully created, send a success response
-                return res.status(201).json({ msg: "Successfully created new Test on platform", test_code: testCode });
-            }
-        });
-    });
+          });
+        }
+      });
+    }
+  );
 };
 
-
 const userCreatedTests = (req, res) => {
-  const userId = req.user.id;
-  if (userId) {
-    Test.find({ userId: userId }).exec((error, _allTests) => {
-      if (error)
-        return res
-          .status(400)
-          .json({
-            msg: "Something went wrong while fetching user tests",
-            error,
-          });
-      if (_allTests) return res.status(200).json({ _allTests });
-    });
-  } else {
-    return res.status(400).json({
-      msg: {
-        one: "check user id, something wrong with it",
-        two: "can't pass empty userId",
-      },
-    });
-  }
+  Test.find({}).exec((error, _allTests) => {
+    if (error) {
+      return res.status(400).json({
+        msg: "Something went wrong while fetching all tests",
+        error,
+      });
+    }
+    if (_allTests) {
+      return res.status(200).json({ _allTests });
+    }
+  });
 };
 
 const testRegister = async (req, res) => {
@@ -89,11 +98,9 @@ const testAdminData = (req, res) => {
   if (test_code) {
     User.find({ test_code: test_code }).exec((error, candidates) => {
       if (error)
-        return res
-          .status(400)
-          .json({
-            msg: "Something went wrong while fetching candidates-status",
-          });
+        return res.status(400).json({
+          msg: "Something went wrong while fetching candidates-status",
+        });
       if (candidates) return res.status(200).json({ candidates });
     });
   }
@@ -252,83 +259,74 @@ const getAllowedUsers = async (req, res) => {
 };
 
 // In test.control.js
-const uploadScreenshot =async (req, res) => {
+const uploadScreenshot = async (req, res) => {
   try {
-    console.log('hihi',req.params);
     const { user_id, test_code } = req.params;
-    const { screenshot } = req.body; // Assuming base64 and optional originalName are sent in the request body
+    const { screenshot, message, timestamp } = req.body;
 
     if (!screenshot) {
-        return res.status(400).json({ message: 'No image data provided' });
+      return res.status(400).json({ message: "No image data provided" });
     }
 
-    // Store metadata and base64 data in MongoDB
     const fileData = {
       user_id,
-        test_code,
-        screenshot,
+      test_code,
+      screenshot,
+      message,
+      timestamp, // Ensure the timestamp is a valid Date object
     };
 
     const newFile = new File(fileData);
     await newFile.save();
 
-    res.status(200).json({ message: 'File uploaded successfully', fileData });
-} catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).json({ message: 'Server error' });
-}
-};
-
-// const getScreenshotsByTestCodeAndUserId = async (req, res) => {
-//   const { test_code, user_id } = req.params;
-//   console.log(test_code,user_id);
-  
-//   try {
-//       // Fetch screenshots for a specific test code and user ID
-//       const screenshots = await File.find({ test_code: test_code, user_id: user_id });
-//       if (!screenshots.length) {
-//           return res.status(404).json({ message: 'No screenshots found for this test code and user ID' });
-//       }
-
-//       const result = { [user_id]: screenshots.map(screenshot => screenshot.screenshot) };
-      
-//       res.status(200).json(result);
-//   } catch (error) {
-//       res.status(500).json({ message: error.message });
-//   }
-// };
-const getScreenshotsByTestCodeAndUserId = async (req, res) => {
-  const { test_code, user_id } = req.params;
-  console.log(test_code, user_id);
-  
-  try {
-      // Fetch screenshots for a specific test code and user ID
-      const screenshots = await File.find({ test_code: test_code, user_id: user_id });
-      if (!screenshots.length) {
-          return res.status(404).json({ message: 'No screenshots found for this test code and user ID' });
-      }
-
-      // Fetch user details
-      const user = await User.findById(user_id, 'fullName');
-      if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-      }
-
-      const result = {
-          user_id: user_id,
-          fullName: user.fullName,
-          screenshots: screenshots.map(screenshot => screenshot.screenshot)
-      };
-      
-      res.status(200).json(result);
+    res.status(200).json({ message: "File uploaded successfully", fileData });
   } catch (error) {
-      res.status(500).json({ message: error.message });
+    console.error("Error uploading file:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
+const getScreenshotsByTestCodeAndUserId = async (req, res) => {
+  const { test_code, user_id } = req.params;
+  const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 if not specified
+  const offset = parseInt(req.query.offset, 10) || 0; // Default to 0 if not specified
 
+  try {
+    // Fetch screenshots for a specific test code and user ID with pagination
+    const screenshots = await File.find({
+      test_code: test_code,
+      user_id: user_id,
+    })
+      .skip(offset)
+      .limit(limit);
 
+    if (!screenshots.length) {
+      return res.status(404).json({
+        message: "No screenshots found for this test code and user ID",
+      });
+    }
 
+    // Fetch user details
+    const user = await User.findById(user_id, "fullName");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const result = {
+      user_id: user_id,
+      fullName: user.fullName,
+      screenshots: screenshots.map((screenshot) => ({
+        screenshot: screenshot.screenshot,
+        message: screenshot.message,
+        timestamp: screenshot.timestamp,
+      })),
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   createTest,
@@ -348,5 +346,5 @@ module.exports = {
   getTerminatedUsers,
   getAllowedUsers,
   uploadScreenshot,
-  getScreenshotsByTestCodeAndUserId
+  getScreenshotsByTestCodeAndUserId,
 };
