@@ -2,6 +2,7 @@ const Test = require("../models/test");
 const User = require("../models/user");
 const shortid = require("shortid");
 const File = require("../models/fileupload");
+const Attendance = require("../models/attendance");
 
 const createTest = (req, res) => {
   const {
@@ -78,18 +79,88 @@ const userCreatedTests = (req, res) => {
   });
 };
 
+// const testRegister = async (req, res) => {
+//   const { test_code } = req.params;
+//   const userId = req.user.id;
+//   if (userId) {
+//     const updateData = await User.findOneAndUpdate(
+//       { _id: userId },
+//       {
+//         test_code: test_code,
+//       }
+//     );
+//     // res.status(200).json({ updateData });
+//     res.status(200).json({ msg: "Now you are register" });
+//   }
+// };
+
 const testRegister = async (req, res) => {
-  const { test_code } = req.params;
+  const { test_code } = req.params; // Extract the test_code from the URL
   const userId = req.user.id;
+
   if (userId) {
-    const updateData = await User.findOneAndUpdate(
-      { _id: userId },
-      {
-        test_code: test_code,
+    try {
+      // Fetch the user's name from the database
+      const user = await User.findById(userId, "fullName");
+
+      if (!user) {
+        return res.status(404).json({ msg: "User not found" });
       }
-    );
-    // res.status(200).json({ updateData });
-    res.status(200).json({ msg: "Now you are register" });
+
+      // Check if the attendance record already exists
+      const existingRecord = await Attendance.findOne({
+        test_code: test_code,
+        userId: userId,
+      });
+
+      if (existingRecord) {
+        return res.status(200).json({
+          msg: "Attendance already marked for this user",
+          attendanceRecords: existingRecord,
+        });
+      }
+
+      // Create a new attendance record
+      const attendance = new Attendance({
+        userId: userId,
+        fullName: user.fullName,
+        test_code: test_code,
+        attendance_time: new Date(),
+      });
+
+      // Save the attendance record
+      await attendance.save();
+
+      res.status(200).json({ msg: "Attendance marked successfully" });
+    } catch (error) {
+      res.status(500).json({ msg: "Error registering for the exam", error });
+    }
+  } else {
+    res.status(400).json({ msg: "Invalid user ID" });
+  }
+};
+
+// In your controller file
+const getAttendanceByTestCode = async (req, res) => {
+  const { test_code } = req.params;
+
+  try {
+    const attendanceRecords = await Attendance.find({ test_code })
+      .populate("userId", "email fullName") // Populate both email and fullName
+      .exec();
+
+    // Respond with userId and fullName
+    const response = attendanceRecords.map((record) => ({
+      userId: record.userId._id,
+      fullName: record.userId.fullName,
+      email: record.userId.email,
+      attendance_time: new Date(record.attendance_time).toLocaleString(),
+    }));  
+
+    res.status(200).json({ attendanceRecords: response });
+  } catch (error) {
+    console.error("Error fetching attendance records:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -347,4 +418,5 @@ module.exports = {
   getAllowedUsers,
   uploadScreenshot,
   getScreenshotsByTestCodeAndUserId,
+  getAttendanceByTestCode,
 };

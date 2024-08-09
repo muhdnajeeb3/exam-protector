@@ -1,41 +1,42 @@
 const express = require("express");
-const multer = require('multer');
+const multer = require("multer");
 
 const {
-    createTest,
-    userCreatedTests,
-    testAdminData,
-    testRegister,
-    increasePersonDetected,
-    increaseVoiceDetected,
-    increaseFaceCovering,
-    totalWarnings,
-    terminateExam,
-    allowInExam,
-    getAllWarnings ,
-    getTerminatedUsers,
-    getAllowedUsers,
-    uploadScreenshot,
-    getScreenshotsByTestCode,
-    getScreenshotsByTestCodeAndUserId
+  createTest,
+  userCreatedTests,
+  testAdminData,
+  testRegister,
+  increasePersonDetected,
+  increaseVoiceDetected,
+  increaseFaceCovering,
+  totalWarnings,
+  terminateExam,
+  allowInExam,
+  getAllWarnings,
+  getTerminatedUsers,
+  getAllowedUsers,
+  uploadScreenshot,
+  getScreenshotsByTestCode,
+  getScreenshotsByTestCodeAndUserId,
+  getAttendanceByTestCode,
 } = require("../controllers/test.control");
 const { requireSignIn } = require("../middlewares");
 const router = express.Router();
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = path.join(path.dirname(__dirname), 'uploads');
-        console.log('Saving file to:', uploadPath);
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        const fileName = shortid.generate() + '-' + file.originalname;
-        console.log('Generated file name:', fileName);
-        cb(null, fileName);
-    }
+  destination: function (req, file, cb) {
+    const uploadPath = path.join(path.dirname(__dirname), "uploads");
+    console.log("Saving file to:", uploadPath);
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const fileName = shortid.generate() + "-" + file.originalname;
+    console.log("Generated file name:", fileName);
+    cb(null, fileName);
+  },
 });
 const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit for file uploads
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for file uploads
 });
 
 // user/admin can create test
@@ -45,17 +46,20 @@ router.post("/create-test", requireSignIn, createTest);
 router.get("/all-created-test", requireSignIn, userCreatedTests);
 
 // for registering the exam
-router.patch("/test-register/:test_code", requireSignIn, testRegister);
+router.post("/test-register/:test_code", requireSignIn, testRegister);
 
+// for getting attendence by test code
+
+router.get("/attendance/:test_code", requireSignIn, getAttendanceByTestCode);  
+  
 // user/admin can fetch the live status of test
 router.get("/test-live-status/:test_code", requireSignIn, testAdminData);
 
 // increasing warning count of person detected
-router.patch("/warning-person-detected", requireSignIn, increasePersonDetected);  
+router.patch("/warning-person-detected", requireSignIn, increasePersonDetected);
 
 router.get("/all-warnings", requireSignIn, getAllWarnings); // New route to get all warnings
 
- 
 // increasing warning count of voice-detected
 router.patch("/warning-voice-detected", requireSignIn, increaseVoiceDetected);
 
@@ -74,9 +78,16 @@ router.patch("/allow-in-exam/:userId", requireSignIn, allowInExam);
 
 router.get("/allowed-users", requireSignIn, getAllowedUsers);
 
-router.post('/test/screenshot/:test_code/:user_id', requireSignIn, upload.single('screenshot'), uploadScreenshot);
+router.post(
+  "/test/screenshot/:test_code/:user_id",
+  requireSignIn,
+  upload.single("screenshot"),
+  uploadScreenshot
+);
 
-router.get('/screenshots/:test_code/:user_id', getScreenshotsByTestCodeAndUserId);
-
+router.get(
+  "/screenshots/:test_code/:user_id",
+  getScreenshotsByTestCodeAndUserId
+);
 
 module.exports = router;

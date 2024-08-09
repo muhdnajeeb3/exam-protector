@@ -250,6 +250,36 @@ const Exam = ({
   //         document.removeEventListener('keydown', handleKeyDown);
   //     };
   // }, []);
+  useEffect(() => {
+    const examCode = localStorage.getItem("test_code")
+  
+    const markAttendance = async () => {
+      try {
+        const response = await axios.post(
+          `/api/test-register/${examCode}`,
+          {
+            studentID,
+            studentName,
+            studentEmail,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+  
+        if (response.status === 201) {
+          console.log("Attendance marked successfully");
+        }
+      } catch (error) {
+        console.error("Failed to mark attendance:", error.response?.data || error.message);
+      }
+    };
+  
+    markAttendance();
+  }, []);
+  
 
   return (
     <>

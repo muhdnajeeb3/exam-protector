@@ -11,6 +11,7 @@ import {
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import MaliciousScreen from './containers/maliciousdata/MaliciousScreen';
+import Attendance from './containers/attendance/Attendance';
 
 const App = () => {
 	return (
@@ -25,6 +26,7 @@ const App = () => {
 					<Route path="/status" element={<Status />} />
 					<Route path="/exam" element={<Exam />} />
 					<Route path="/suspicious" element={<MaliciousScreen />} />
+					<Route path="/attendance" element={<Attendance />} />
 				</Routes>
 			</BrowserRouter>
 		</div>

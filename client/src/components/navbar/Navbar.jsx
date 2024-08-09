@@ -6,9 +6,6 @@ import { Link } from "react-router-dom";
 const NavLinks = ({ username }) => (
   <>
     <p>
-      <Link to='/'>Blog</Link>
-    </p>
-    <p>
       <Link to='/status'>Status</Link>
     </p>
     <p>
@@ -18,9 +15,9 @@ const NavLinks = ({ username }) => (
       <Link to='/suspicious'>Suspicious</Link>
     </p>
     <p>
-      <Link to='/'>Contact Us</Link>
+      <Link to='/attendance'>Attendance</Link>
     </p>
-    <p>
+    <p style={{fontWeight:username && '600',color:username && 'black'}}>
       {username ? username : (
         <Link to="/login" style={{color:'blue'}}>Login</Link>
       )}

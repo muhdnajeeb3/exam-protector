@@ -24,6 +24,9 @@ const Timer = ({ initialMinute = 1, initialSeconds = 0, onTimeout }) => {
       if (minutes === 15 && seconds === 0) {
         toast.info('15 minutes remaining');
       }
+	  if (minutes === 5 && seconds === 0) {
+        toast.info('5 minutes remaining');
+      }
     }, 1000);
 
     return () => {
